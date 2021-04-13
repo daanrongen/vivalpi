@@ -80,7 +80,6 @@ void ofApp::setup(){
     gui.setHeaderBackgroundColor(255);
     gui.add(instrumentSettings.setup("Instrument Settings", ""));
     gui.add(metronomeVolume.setup("Metronome Volume", 0.0, 0.0, 0.3));
-//    gui.add(bassToggle.setup("Bass Toggle", true));
     
     gui.add(weatherSettings.setup("Weather Settings", ""));
     gui.add(temperature.setup("Temperature (ºC)", getTemperature(), -20.0, 50.0));
@@ -88,8 +87,13 @@ void ofApp::setup(){
     gui.add(clouds.setup("Clouds (%)", getCloudiness(), 0.0, 100.0));
     gui.add(precipitation.setup("Rain (mm/s)", getPrecipitation(), 0.0, 300.0));
     gui.add(windSpeed.setup("Wind Speed (m/s)", getWindSpeed(), 0.0, 200.0));
-//    gui.add(seasonProgression.setup("Date (month)", getSeasonValue(), 0.0, 12.0));
-//    gui.add(sunPosition.setup("Sun Position (day/night)", getSunPosition(), -1.0, 1.0));
+    
+    //    gui.add(cutoff.setup("Cutoff", 2, 0, 40));
+    //    gui.add(resonance.setup("Resonance", 20, 0, 40));
+    //    gui.add(attack.setup("Attack", 0, 0, 10000));
+    //    gui.add(decay.setup("Decay", 0, 0, 10000));
+    //    gui.add(sustain.setup("Sustain", 0, 0, 10000));
+    //    gui.add(release.setup("Release", 1000, 0, 10000));
     
     int sampleRate = 44100;
     int bufferSize= 512;
@@ -125,12 +129,20 @@ void ofApp::setup(){
     rain_feedback_a = 0.9999;
     rain_feedback_b = 0.9999;
     
-//    bass.setEnv(10, 10, 10, 400);
-//    bass.setFrequency(60);
+    lead.setEnv(10, 1, 1, 1000);
+    lead_clock.setTempo(clock.bpm);
+    lead_clock.setTicksPerBeat(clock.ticks);
+    lead_chord = lead_prev_chord = 0;
+    lead_cutoff = 0;
+    lead_resonance = 3;
+    lead_motif_changed = false;
+    
+    //    for (int i = 0; i < 32; i++) notes[i] = randomInt(48, 83);
+    //    for (int i = 0; i < 16; i++) chords[i] = randomInt(0, 6);
 }
 
 void ofApp::update(){
-//    ofBackground(ofMap(sunPosition, -1.0, 1.0, 0, 255));
+    //    ofBackground(ofMap(sunPosition, -1.0, 1.0, 0, 255));
     ofBackground(255);
     metronome.setVolume(metronomeVolume);
     
@@ -143,7 +155,6 @@ void ofApp::update(){
 
 void ofApp::draw(){
     gui.draw();
-//    gui.draw();
     
     for (int i = 0; i < oct.nAverages; i++) {
         ofColor color;
@@ -162,6 +173,7 @@ void ofApp::audioOut(ofSoundBuffer& output){
         clock.ticker();
         rain_clock_1.ticker();
         rain_clock_2.ticker();
+        lead_clock.ticker();
         
         if (clock.tick) {
             playhead++;
@@ -170,10 +182,6 @@ void ofApp::audioOut(ofSoundBuffer& output){
             else metronome.deactivate();
             
             rain_clock_1.setTicksPerBeat(floor(1 + randomFloat() * 5));
-            
-//            if (playhead % 4 == 0) bass.activate();
-//            if (randomFloat() > 0.8) bass.activate();
-//            else bass.deactivate();
         }
         
         if (rain_clock_1.tick) {
@@ -204,12 +212,48 @@ void ofApp::audioOut(ofSoundBuffer& output){
         rain.setFrequency((rain_frequency * rain_volume_b) + (mod.sinewave(rain_frequency2 * rain_feedback_b) * rain_modulation_index));
         rain.setVolume(rain_volume_a);
         
-//        if (bassToggle) {
-//            bass.setFrequency(ofMap(rain_frequency * rain_volume_b, 0, 600, 60, 80));
-//            bass.setVolume(rain_volume_b);
-//        } else bass.setVolume(0.0);
+        if (lead_clock.tick) {
+            if (playhead % 32 == 0) lead_chord++;
+            
+            lead_volume = 0.5;
+            lead_feedback = 1.0 - randomFloat() * 0.0001;
+            
+            if (randomFloat() > 0.95) {
+                lead_cutoff = 35;
+                lead_resonance = 40;
+                lead_prev_chord = lead_chord;
+                
+                cout << "filter params changed" << endl;
+            }
+            
+            if (lead_chord > lead_prev_chord) {
+                lead_cutoff = 0;
+                lead_resonance = 2;
+            }
+            
+            if (lead_chord % 4 == 0 && !lead_motif_changed) {
+                for (int i = 0; i < 32; i++) notes[i] = randomInt(48, 83);
+                for (int i = 0; i < 16; i++) chords[i] = randomInt(0, 6);
+                cout << "motif changed" << endl;
+                
+                lead_motif_changed = true;
+            }
+            
+            cout << lead_motif_changed << endl;
+            
+            lead.activate();
+        } else lead.deactivate();
         
-        float out = rain.play() + metronome.play();
+        lead_volume *= lead_feedback;
+        lead.setFrequency(filter.hires(mtof.mtof(notes[playhead % 32] + chords[lead_chord % 16]), lead_cutoff, lead_resonance));
+        lead.setVolume(lead_volume);
+        lead.setEnv(lead_volume * 1000, 1, 1, 300);
+        
+        // hires filter bass: cutoff: 0, resonance: 2.5
+        // hires filter pitch: cutoff: 35, resonance: 40
+        
+        
+        float out = rain.play() + metronome.play() + lead.play();
         
         if (fft.process(out)) oct.calculate(fft.magnitudes);
         mix.stereo(out, outputs, 0.5);

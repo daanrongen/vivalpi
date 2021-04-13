@@ -40,11 +40,20 @@ public:
     ofxFloatSlider sunPosition;
     ofxToggle bassToggle;
     
+    //    ofxFloatSlider attack, decay, sustain, release;
+    //    ofxFloatSlider cutoff, resonance;
+    
     maxiOsc osc, mod;
     maxiClock clock;
     maxiClock rain_clock_1, rain_clock_2;
+    maxiClock lead_clock;
+    maxiFilter filter;
     convert mtof;
     maxiMix mix;
+    
+    Instrument rain;
+    Instrument metronome;
+    Instrument lead;
     
     float waveform[4096];
     int waveIndex;
@@ -55,7 +64,10 @@ public:
     float rain_volume_a, rain_volume_b, rain_feedback_a, rain_feedback_b;
     double rain_frequency, rain_frequency2, rain_modulation_index;
     
-    Instrument rain;
-    Instrument metronome;
-    Instrument bass;
+    int notes[32];
+    int chords[16];
+    int lead_chord, lead_prev_chord;
+    float lead_volume, lead_feedback;
+    double lead_cutoff, lead_resonance;
+    bool lead_motif_changed;
 };
