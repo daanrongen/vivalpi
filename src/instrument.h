@@ -19,7 +19,6 @@ private:
     maxiFilter filter;
     
     double frequency;
-    float a;
     float vol;
 
 public:
