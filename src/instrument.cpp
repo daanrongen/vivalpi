@@ -9,7 +9,7 @@
 #include "ofMain.h"
 
 Instrument::Instrument() {
-    frequency = 200;
+    frequency = 0;
     vol = 1.0;
 }
 
