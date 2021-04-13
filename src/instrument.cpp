@@ -10,7 +10,6 @@
 
 Instrument::Instrument() {
     frequency = 200;
-    a = 1.0;
     vol = 1.0;
 }
 

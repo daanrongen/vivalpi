@@ -75,19 +75,19 @@ void ofApp::setup(){
     ofSetupScreen();
     ofSetFrameRate(60);
     
-    instrumentGui.setup();
-    instrumentGui.setBackgroundColor(255);
-    instrumentGui.setHeaderBackgroundColor(255);
-    instrumentGui.add(instrumentSettings.setup("Instrument Settings", ""));
-    instrumentGui.add(metronomeVolume.setup("Metronome Volume", 0.0, 0.0, 0.3));
+    gui.setup();
+    gui.setBackgroundColor(255);
+    gui.setHeaderBackgroundColor(255);
+    gui.add(instrumentSettings.setup("Instrument Settings", ""));
+    gui.add(metronomeVolume.setup("Metronome Volume", 0.0, 0.0, 0.3));
 //    gui.add(bassToggle.setup("Bass Toggle", true));
     
-    weatherGui.add(weatherSettings.setup("Weather Settings", ""));
-    weatherGui.add(temperature.setup("Temperature (ºC)", getTemperature(), -20.0, 50.0));
-    weatherGui.add(humidity.setup("Humidity (%)", getHumidity(), 0.0, 100.0));
-    weatherGui.add(clouds.setup("Clouds (%)", getCloudiness(), 0.0, 100.0));
-    weatherGui.add(precipitation.setup("Rain (mm/s)", getPrecipitation(), 0.0, 300.0));
-    weatherGui.add(windSpeed.setup("Wind Speed (m/s)", getWindSpeed(), 0.0, 200.0));
+    gui.add(weatherSettings.setup("Weather Settings", ""));
+    gui.add(temperature.setup("Temperature (ºC)", getTemperature(), -20.0, 50.0));
+    gui.add(humidity.setup("Humidity (%)", getHumidity(), 0.0, 100.0));
+    gui.add(clouds.setup("Clouds (%)", getCloudiness(), 0.0, 100.0));
+    gui.add(precipitation.setup("Rain (mm/s)", getPrecipitation(), 0.0, 300.0));
+    gui.add(windSpeed.setup("Wind Speed (m/s)", getWindSpeed(), 0.0, 200.0));
 //    gui.add(seasonProgression.setup("Date (month)", getSeasonValue(), 0.0, 12.0));
 //    gui.add(sunPosition.setup("Sun Position (day/night)", getSunPosition(), -1.0, 1.0));
     
@@ -142,8 +142,8 @@ void ofApp::update(){
 }
 
 void ofApp::draw(){
-    instrumentGui.draw();
-    weatherGui.draw();
+    gui.draw();
+//    gui.draw();
     
     for (int i = 0; i < oct.nAverages; i++) {
         ofColor color;

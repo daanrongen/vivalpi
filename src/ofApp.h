@@ -28,8 +28,7 @@ public:
     ofxMaxiFFT fft;
     ofxMaxiFFTOctaveAnalyzer oct;
     
-    ofxGuiGroup gui;
-    ofxPanel instrumentGui, weatherGui;
+    ofxPanel gui;
     ofxLabel instrumentSettings, weatherSettings;
     ofxFloatSlider metronomeVolume;
     ofxFloatSlider temperature;
