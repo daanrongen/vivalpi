@@ -25,7 +25,7 @@ float getWindSpeed() {
 
 float getTemperature() {
     // PERFORM API REQUEST HERE
-    float temperature = 12.0;
+    float temperature = 9.0;
     return temperature;
 }
 
@@ -41,21 +41,6 @@ float getCloudiness() {
     return cloudiness;
 }
 
-float getSunPosition() {
-    // PERFORM API REQUEST HERE
-    int sunrise = 1560343627;
-    int sunset = 1560396563;
-    int now = 1560392563;
-    int dayPeak = sunrise + ((sunset - sunrise) / 2);
-    int nightPeak = (sunrise + 86400) - sunset;
-    
-    if (now < sunset && now < dayPeak) return ofMap(now, sunrise, dayPeak, 0.0, 1.0); // between sunrise and daypeak
-    else if (now < sunset && now > dayPeak) return ofMap(now, dayPeak, sunset, 1.0, 0.0); // between daypeak and sunset
-    else if (now > sunset && now < nightPeak) return ofMap(now, sunset, nightPeak, 0.0, -1.0); // between sunset and nightpeak
-    else if (now > sunset && now > nightPeak) return ofMap(now, nightPeak, sunrise + 86400, -1.0, 0.0); // between nightpeak and sunrise
-    else return NULL;
-}
-
 float getSeasonValue() {
     time_t now = time(0);
     tm *local_time = localtime(&now);
@@ -66,10 +51,6 @@ float getSeasonValue() {
     return (float)month + monthProgression;
 }
 
-/*
- wind sound: noise with and the resonant (resonance / cue) filter peak wind sound
- */
-
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetupScreen();
@@ -79,21 +60,26 @@ void ofApp::setup(){
     gui.setBackgroundColor(255);
     gui.setHeaderBackgroundColor(255);
     gui.add(instrumentSettings.setup("Instrument Settings", ""));
-    gui.add(metronomeVolume.setup("Metronome Volume", 0.0, 0.0, 0.3));
-    
     gui.add(weatherSettings.setup("Weather Settings", ""));
-    gui.add(temperature.setup("Temperature (ºC)", getTemperature(), -20.0, 50.0));
+    gui.add(temperature.setup("Temperature (ºC)", getTemperature(), -10.0, 40.0));
     gui.add(humidity.setup("Humidity (%)", getHumidity(), 0.0, 100.0));
     gui.add(clouds.setup("Clouds (%)", getCloudiness(), 0.0, 100.0));
     gui.add(precipitation.setup("Rain (mm/s)", getPrecipitation(), 0.0, 300.0));
     gui.add(windSpeed.setup("Wind Speed (m/s)", getWindSpeed(), 0.0, 200.0));
     
-    //    gui.add(cutoff.setup("Cutoff", 2, 0, 40));
-    //    gui.add(resonance.setup("Resonance", 20, 0, 40));
-    //    gui.add(attack.setup("Attack", 0, 0, 10000));
-    //    gui.add(decay.setup("Decay", 0, 0, 10000));
-    //    gui.add(sustain.setup("Sustain", 0, 0, 10000));
-    //    gui.add(release.setup("Release", 1000, 0, 10000));
+    gui.add(cutoff.setup("Cutoff", 0, 0, 800));
+    gui.add(resonance.setup("Resonance", 0.5, 0.0, 1.0));
+    gui.add(attack.setup("Attack", 1, 0, 1000));
+    gui.add(decay.setup("Decay", 1, 0, 1000));
+    gui.add(sustain.setup("Sustain", 1, 0, 1000));
+    gui.add(release.setup("Release", 1, 0, 1000));
+    
+    gui.add(lowpass.setup("Low Pass", 0.5, 0.0, 1.0));
+    gui.add(highpass.setup("High Pass", 0.5, 0.0, 1.0));
+    gui.add(bandpass.setup("Band Pass", 0.5, 0.0, 1.0));
+    gui.add(notch.setup("Notch", 0.5, 0.0, 1.0));
+    gui.add(pitch.setup("Pitch", 12000, 0, 20000));
+    gui.add(distortion.setup("Distortion", 0.0, 0.0, 2.0));
     
     int sampleRate = 44100;
     int bufferSize= 512;
@@ -117,34 +103,45 @@ void ofApp::setup(){
     metronome.setEnv(1, 1, 1, 1000);
     metronome.setFrequency(640);
     
-    rain.setEnv(1000, 1, 1, 300);
-    rain.setFrequency(320);
     rain_clock_1.setTempo(clock.bpm);
     rain_clock_1.setTicksPerBeat(clock.ticks);
     rain_volume_a = 0.5;
     rain_volume_b = 0.5;
-    rain_frequency = 350;
-    rain_frequency2 = 50;
+    rain_frequency = 600;
+    rain_frequency2 = 150;
     rain_modulation_index = 650;
     rain_feedback_a = 0.9999;
     rain_feedback_b = 0.9999;
+    rain.setEnv(1000, 1, 1, 300);
     
-    lead.setEnv(10, 1, 1, 1000);
+    chordsRange = {floor(ofMap(temperature, temperature.getMin(), temperature.getMax(), 2, 9)), floor(ofMap(temperature, temperature.getMin(), temperature.getMax(), 5, 12))};
+    notesRange = {floor(ofMap(temperature, temperature.getMin(), temperature.getMax(), 36, 48)), floor(ofMap(temperature, temperature.getMin(), temperature.getMax(), 59, 83))};
+    
+    for (int i = 0; i < 16; i++) notes[i] = randomInt(notesRange.x, notesRange.y);
+    for (int i = 0; i < 8; i++) chords[i] = randomInt(chordsRange.x, chordsRange.y);
+    
     lead_clock.setTempo(clock.bpm);
     lead_clock.setTicksPerBeat(clock.ticks);
     lead_chord = lead_prev_chord = 0;
-    lead_cutoff = 0;
-    lead_resonance = 3;
     lead_motif_changed = false;
+    lead_attack = 1000;
+    lead_cutoff = notesRange.x;
+    lead_resonance = notesRange.y;
+    lead.setEnv(lead_attack, 1, 1, 30);
     
-    //    for (int i = 0; i < 32; i++) notes[i] = randomInt(48, 83);
-    //    for (int i = 0; i < 16; i++) chords[i] = randomInt(0, 6);
+    wind_clock.setTempo(clock.bpm);
+    wind_clock.setTicksPerBeat(clock.ticks);
+    wind.setEnv(1000, 1, 1, 200);
+    wind.setFilterMix(0.10, 0.0, 0.5, 0.25);
+    
+    kick.setPitch(180);
+    kick.setRelease(650);
+    hihat_pitch = 12000;
+    hihat_release = 800;
 }
 
 void ofApp::update(){
-    //    ofBackground(ofMap(sunPosition, -1.0, 1.0, 0, 255));
     ofBackground(255);
-    metronome.setVolume(metronomeVolume);
     
     for (int i = 0; i < 64; i++) {
         if (i <= floor(ofMap(precipitation, 0, 800, 0, 64))) rain_trigger[i] = 1;
@@ -174,6 +171,7 @@ void ofApp::audioOut(ofSoundBuffer& output){
         rain_clock_1.ticker();
         rain_clock_2.ticker();
         lead_clock.ticker();
+        wind_clock.ticker();
         
         if (clock.tick) {
             playhead++;
@@ -181,23 +179,36 @@ void ofApp::audioOut(ofSoundBuffer& output){
             if (playhead % 4 == 0) metronome.activate();
             else metronome.deactivate();
             
+            if (playhead % 8 == 0 || randomFloat() > 0.95) kick.trigger();
+            if (playhead % 4 == 0 || randomFloat() > 0.50) {
+                hihat_volume = 0.15;
+                hihat_pitch = 12000;
+                hihat_release = 800;
+                hihat_feedback = 1.0 - randomFloat() * 0.001;
+                hihat.trigger();
+            };
+            
             rain_clock_1.setTicksPerBeat(floor(1 + randomFloat() * 5));
         }
+        
+        hihat_volume, hihat_pitch, hihat_release *= hihat_feedback;
+        hihat.setRelease(hihat_release);
+        hihat.setPitch(hihat_pitch);
         
         if (rain_clock_1.tick) {
             if (rain_trigger[playhead % 64] == 1) rain.activate();
             else rain.deactivate();
             
-            rain_frequency = randomInt(400, 900);
+            rain_frequency = randomInt(700, 1000);
             rain_frequency2 = randomInt(0, 10);
             rain_modulation_index = randomInt(0, 600);
-            rain_volume_a = 0.5;
+            rain_volume_a = 0.6;
             rain_feedback_a = 1.0 - randomFloat() * 0.001;
         }
         
         if (rain_clock_2.tick) {
-            rain_frequency = 400;
-            rain_frequency2 = 50;
+            rain_frequency = 600;
+            rain_frequency2 = 150;
             rain_modulation_index = 10;
             rain_volume_a = 1.0;
             rain_volume_b = 0.5;
@@ -210,50 +221,28 @@ void ofApp::audioOut(ofSoundBuffer& output){
         rain_volume_b *= rain_feedback_b;
         
         rain.setFrequency((rain_frequency * rain_volume_b) + (mod.sinewave(rain_frequency2 * rain_feedback_b) * rain_modulation_index));
-        rain.setVolume(rain_volume_a);
+        rain.setVolume(rain_volume_a + 0.5);
         
         if (lead_clock.tick) {
             if (playhead % 32 == 0) lead_chord++;
             
             lead_volume = 0.5;
             lead_feedback = 1.0 - randomFloat() * 0.0001;
-            
-            if (randomFloat() > 0.95) {
-                lead_cutoff = 35;
-                lead_resonance = 40;
-                lead_prev_chord = lead_chord;
-                
-                cout << "filter params changed" << endl;
-            }
-            
-            if (lead_chord > lead_prev_chord) {
-                lead_cutoff = 0;
-                lead_resonance = 2;
-            }
-            
-            if (lead_chord % 4 == 0 && !lead_motif_changed) {
-                for (int i = 0; i < 32; i++) notes[i] = randomInt(48, 83);
-                for (int i = 0; i < 16; i++) chords[i] = randomInt(0, 6);
-                cout << "motif changed" << endl;
-                
-                lead_motif_changed = true;
-            }
-            
-            cout << lead_motif_changed << endl;
-            
             lead.activate();
-        } else lead.deactivate();
+        }
         
-        lead_volume *= lead_feedback;
-        lead.setFrequency(filter.hires(mtof.mtof(notes[playhead % 32] + chords[lead_chord % 16]), lead_cutoff, lead_resonance));
+        lead_volume, lead_attack *= lead_feedback;
+        lead.setFrequency(filter.hires(mtof.mtof(notes[playhead % 16] + chords[lead_chord % 8]), lead_cutoff, lead_resonance));
         lead.setVolume(lead_volume);
-        lead.setEnv(lead_volume * 1000, 1, 1, 300);
+        lead.setEnv(lead_attack, randomInt(1, 50), 1, 300);
         
-        // hires filter bass: cutoff: 0, resonance: 2.5
-        // hires filter pitch: cutoff: 35, resonance: 40
+        if (wind_clock.tick) {
+            if (playhead % 8 == 0) wind.activate();
+        }
         
+        wind.setFrequency(mtof.mtof(notes[lead_chord % 8]));
         
-        float out = rain.play() + metronome.play() + lead.play();
+        float out = kick.play() + (hihat.play() * hihat_volume) + rain.play() + lead.play();
         
         if (fft.process(out)) oct.calculate(fft.magnitudes);
         mix.stereo(out, outputs, 0.5);
