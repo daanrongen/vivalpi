@@ -29,24 +29,13 @@ public:
     ofxMaxiFFTOctaveAnalyzer oct;
     
     ofxPanel gui;
-    ofxLabel instrumentSettings, weatherSettings;
-    ofxFloatSlider metronomeVolume;
     ofxFloatSlider temperature;
-    ofxFloatSlider humidity;
-    ofxFloatSlider clouds;
+    ofxFloatSlider cloudiness;
     ofxFloatSlider precipitation;
     ofxFloatSlider windSpeed;
-    ofxFloatSlider seasonProgression;
-    ofxFloatSlider sunPosition;
-    ofxToggle bassToggle;
     
-    ofxFloatSlider attack, decay, sustain, release;
-    ofxFloatSlider cutoff, resonance;
-    ofxFloatSlider lowpass, highpass, bandpass, notch;
-    ofxFloatSlider pitch, distortion;
-    
-    maxiOsc osc, mod;
-    maxiFilter bass_filter, wind_filter;
+    maxiOsc wind_osc, rain_osc;
+    maxiFilter bass_filter, wind_filter, lead_filter;
     convert mtof;
     maxiMix mix;
     
@@ -58,36 +47,22 @@ public:
     maxiKick kick;
     maxiHats snare;
     maxiHats hihat;
+    maxiHats lead;
     
     Instrument rain;
-    Instrument bass;
     Instrument wind;
+    Instrument bass;
     
     float waveform[4096];
     int waveIndex;
     double outputs[2];
-    int playhead, progression;
+    int playhead;
     float arrangement;
     
     int notes[16];
     int chords[8];
     ofVec3f chordsRange;
     ofVec3f notesRange;
-    
-    int rain_trigger[64];
-    float rain_volume_a, rain_volume_b, rain_feedback_a, rain_feedback_b;
-    double rain_frequency, rain_frequency2, rain_modulation_index;
-    bool rain_isPlaying;
-    
-    int bass_chord;
-    float bass_volume, bass_feedback, bass_attack;
-    double bass_cutoff, bass_resonance;
-    bool bass_isPlaying;
-    
-    int wind_chord;
-    float wind_volume, wind_feedback, wind_speed, wind_stretch;
-    double wind_cutoff, wind_resonance;
-    bool wind_isPlaying;
     
     bool beat_isPlaying;
     float beat_volume;
@@ -98,4 +73,22 @@ public:
     float snare_volume, snare_feedback;
     double snare_pitch, snare_release;
     
+    int rain_trigger[64];
+    float rain_volume_a, rain_volume_b, rain_feedback_a, rain_feedback_b;
+    double rain_frequency, rain_frequency2, rain_modulation_index;
+    bool rain_isPlaying;
+    
+    int wind_chord;
+    float wind_volume, wind_feedback, wind_speed, wind_stretch;
+    double wind_cutoff, wind_resonance;
+    bool wind_isPlaying;
+    
+    int bass_chord;
+    float bass_volume, bass_feedback, bass_attack;
+    double bass_cutoff, bass_resonance;
+    bool bass_isPlaying;
+    
+    int lead_trigger[32];
+    float lead_volume, lead_feedback;
+    bool lead_isPlaying;
 };
