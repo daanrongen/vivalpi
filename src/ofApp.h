@@ -56,7 +56,7 @@ public:
     maxiClock wind_clock;
     
     maxiKick kick;
-    maxiSnare snare;
+    maxiHats snare;
     maxiHats hihat;
     
     Instrument rain;
@@ -73,6 +73,7 @@ public:
     int chords[8];
     ofVec3f chordsRange;
     ofVec3f notesRange;
+    int notesRangeMin, notesRangeMax;
     
     int rain_trigger[64];
     float rain_volume_a, rain_volume_b, rain_feedback_a, rain_feedback_b;
@@ -88,6 +89,12 @@ public:
     float wind_volume, wind_feedback;
     double wind_cutoff, wind_resonance;
     
+    float kick_feedback;
+    double kick_pitch, kick_release;
+    
     float hihat_volume, hihat_feedback;
     double hihat_pitch, hihat_release;
+
+    float snare_volume, snare_feedback;
+    double snare_pitch, snare_release;
 };
