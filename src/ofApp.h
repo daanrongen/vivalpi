@@ -43,16 +43,16 @@ public:
     ofxFloatSlider attack, decay, sustain, release;
     ofxFloatSlider cutoff, resonance;
     ofxFloatSlider lowpass, highpass, bandpass, notch;
-    ofxFloatSlider pitch, kickRelease, distortion;
+    ofxFloatSlider pitch, distortion;
     
     maxiOsc osc, mod;
-    maxiFilter filter;
+    maxiFilter bass_filter, wind_filter;
     convert mtof;
     maxiMix mix;
     
     maxiClock clock;
     maxiClock rain_clock_1, rain_clock_2;
-    maxiClock lead_clock;
+    maxiClock bass_clock;
     maxiClock wind_clock;
     
     maxiKick kick;
@@ -60,41 +60,42 @@ public:
     maxiHats hihat;
     
     Instrument rain;
-    Instrument metronome;
-    Instrument lead;
+    Instrument bass;
     Instrument wind;
     
     float waveform[4096];
     int waveIndex;
     double outputs[2];
-    int playhead;
+    int playhead, progression;
+    float arrangement;
     
     int notes[16];
     int chords[8];
     ofVec3f chordsRange;
     ofVec3f notesRange;
-    int notesRangeMin, notesRangeMax;
     
     int rain_trigger[64];
     float rain_volume_a, rain_volume_b, rain_feedback_a, rain_feedback_b;
     double rain_frequency, rain_frequency2, rain_modulation_index;
+    bool rain_isPlaying;
     
-    int lead_chord, lead_prev_chord;
-    float lead_volume, lead_feedback, lead_attack;
-    double lead_cutoff, lead_resonance;
-    bool lead_motif_changed;
+    int bass_chord;
+    float bass_volume, bass_feedback, bass_attack;
+    double bass_cutoff, bass_resonance;
+    bool bass_isPlaying;
     
-    int wind_trigger[4] = {1, 0, 0, 0};
     int wind_chord;
-    float wind_volume, wind_feedback;
+    float wind_volume, wind_feedback, wind_speed, wind_stretch;
     double wind_cutoff, wind_resonance;
+    bool wind_isPlaying;
     
+    bool beat_isPlaying;
+    float beat_volume;
     float kick_feedback;
     double kick_pitch, kick_release;
-    
     float hihat_volume, hihat_feedback;
     double hihat_pitch, hihat_release;
-
     float snare_volume, snare_feedback;
     double snare_pitch, snare_release;
+    
 };
