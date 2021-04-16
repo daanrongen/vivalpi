@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxMaxim.h"
 #include "ofxGui.h"
+#include "ofxXmlSettings.h"
 #include "instrument.h"
 
 class ofApp : public ofBaseApp {
@@ -27,6 +28,8 @@ public:
     ofSoundStream soundStream;
     ofxMaxiFFT fft;
     ofxMaxiFFTOctaveAnalyzer oct;
+    
+    ofxXmlSettings metrics;
     
     ofxPanel gui;
     ofxFloatSlider temperature;

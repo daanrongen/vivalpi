@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<weather>
+    <precipitation>160</precipitation>
+    <windSpeed>15.6</windSpeed>
+    <temperature>15.0</temperature>
+    <cloudiness>10.0</cloudiness>
+</weather>

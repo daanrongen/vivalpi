@@ -48,13 +48,15 @@ void ofApp::setup(){
     ofSetupScreen();
     ofSetFrameRate(60);
     
+    metrics.loadFile("metrics.xml");
+    
     gui.setup();
     gui.setBackgroundColor(255);
     gui.setHeaderBackgroundColor(255);
-    gui.add(temperature.setup("Temperature (ºC)", getTemperature(), -10.0, 40.0));
-    gui.add(cloudiness.setup("Cloudiness (%)", getCloudiness(), 0.0, 100.0));
-    gui.add(precipitation.setup("Rain (mm/s)", getPrecipitation(), 0.0, 300.0));
-    gui.add(windSpeed.setup("Wind Speed (m/s)", getWindSpeed(), 0.0, 150.0));
+    gui.add(temperature.setup("Temperature (ºC)", metrics.getValue("weather:temperature", 0.0), -10.0, 40.0));
+    gui.add(cloudiness.setup("Cloudiness (%)", metrics.getValue("weather:cloudiness", 0), 0, 100));
+    gui.add(precipitation.setup("Rain (mm/s)", metrics.getValue("weather:precipitation", 0), 0, 300));
+    gui.add(windSpeed.setup("Wind Speed (m/s)", metrics.getValue("weather:windSpeed", 0), 0, 200));
     
     int sampleRate = 44100;
     int bufferSize= 512;
@@ -184,11 +186,11 @@ void ofApp::audioOut(ofSoundBuffer& output){
             }
             
             if (playhead % 64 == 0 && randomFloat() > 0.15) {
-                wind_isPlaying = randomFloat() > ofMap(windSpeed, windSpeed.getMin(), windSpeed.getMax(), 0.0, 1.0) ? true : false;
-                rain_isPlaying = randomFloat() > ofMap(precipitation, precipitation.getMin(), precipitation.getMax(), 0.0, 1.0) ? true : false;
-                bass_isPlaying = randomFloat() > 0.3 ? true : false;
-                beat_isPlaying = randomFloat() > 0.2 ? true : false;
-                lead_isPlaying = randomFloat() > ofMap(cloudiness, cloudiness.getMin(), cloudiness.getMax(), 0.0, 1.0) ? true : false;
+                wind_isPlaying = randomFloat() < ofMap(windSpeed, windSpeed.getMin(), windSpeed.getMax(), 0.0, 1.0) ? true : false;
+                rain_isPlaying = randomFloat() < ofMap(precipitation, precipitation.getMin(), precipitation.getMax(), 0.0, 1.0) ? true : false;
+                bass_isPlaying = randomFloat() < 0.70 ? true : false;
+                beat_isPlaying = randomFloat() < 0.80 ? true : false;
+                lead_isPlaying = randomFloat() < ofMap(cloudiness, cloudiness.getMin(), cloudiness.getMax(), 1.0, 0.0) ? true : false;
                 cout << "arrangement changed" << endl;
             }
             
@@ -237,14 +239,14 @@ void ofApp::audioOut(ofSoundBuffer& output){
         
         if (wind_clock.tick) {
             if (playhead % 8 == 0) {
-                wind_volume = ofMap(windSpeed, windSpeed.getMin(), windSpeed.getMax(), 0.0, 0.3);
+                wind_volume = ofMap(windSpeed, windSpeed.getMin(), windSpeed.getMax(), 0.0, 0.25);
                 wind_stretch = ofMap(windSpeed, windSpeed.getMin(), windSpeed.getMax(), 1750, 4000);
                 wind_speed = ofMap(windSpeed, windSpeed.getMin(), windSpeed.getMax(), 0.1, 0.5);
                 wind.activate();
             }
         }
         
-        wind.setFrequency(wind_filter.lores(mtof.mtof(randomInt(0, 11) + 84), pow(((wind_osc.coswave(wind_speed) + 1) / 2), 2) * wind_stretch + 100, wind_resonance));
+        wind.setFrequency(wind_filter.lores(mtof.mtof(randomInt(0, 11) + 84), pow(((wind_osc.coswave(wind_speed) + 2) / 2), 2) * wind_stretch + 100, wind_resonance));
         wind.setVolume(wind_volume);
         
         if (bass_clock.tick) {
