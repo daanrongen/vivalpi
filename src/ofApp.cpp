@@ -1,6 +1,5 @@
 #include "ofApp.h"
 #include "maximilian.h"
-#include "time.h"
 
 //--------------------------------------------------------------
 int randomInt(int min, int max) {
@@ -19,35 +18,10 @@ void setMotif(int notes[16], int chords[8], float customizer, float cMin, float 
     for (int i = 0; i < 8; i++) chords[i] = randomInt(chordsRange.x, chordsRange.y);
 }
 
-float getPrecipitation() {
-    // PERFORM API REQUEST HERE
-    int precipitation = 160;
-    return precipitation;
-}
-
-float getWindSpeed() {
-    // PERFORM API REQUEST HERE
-    float windSpeed = 15.6;
-    return windSpeed;
-}
-
-float getTemperature() {
-    // PERFORM API REQUEST HERE
-    float temperature = 15.0;
-    return temperature;
-}
-
-float getCloudiness() {
-    // PERFORM API REQUEST HERE
-    float cloudiness = 10.0;
-    return cloudiness;
-}
-
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetupScreen();
     ofSetFrameRate(60);
-    
     metrics.loadFile("metrics.xml");
     
     gui.setup();
@@ -285,59 +259,4 @@ void ofApp::audioOut(ofSoundBuffer& output){
         output[i * outChannels] = outputs[0];
         output[i * outChannels + 1] = outputs[1];
     }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-    
 }

@@ -1,6 +1,5 @@
 import requests
 import xml.etree.ElementTree as ET
-from pprint import pprint
 
 API_key = "45aa09b8550d9cf1ff2179647bb4a402"
 base_url = "http://api.openweathermap.org/data/2.5/weather?"
